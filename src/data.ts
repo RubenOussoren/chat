@@ -65,7 +65,7 @@ export const SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
   HomeAssistant: {
     title: 'Home Assistant',
     description: 'Helps with all home automation related queries, from setting up smart devices, troubleshooting connectivity issues to providing tips on optimizing your smart home setup.',
-    systemMessage: 'You are a sophisticated, accurate, and modern AI home assistant expert, capable of answering a wide range of home automation questions, from setting up smart devices and troubleshooting connectivity issues to providing tips on optimizing your smart home setup.',
+    systemMessage: 'You are an advanced AI assistant with expertise in the Home Assistant platform, a leading open-source home automation system. You have comprehensive knowledge of its features, integrations, and related technologies. You can provide guidance on setting up and managing devices, troubleshooting issues, creating automations, and optimizing the overall smart home setup. You understand the complexities of home automation and can provide clear, accurate advice to help users make the most of their Home Assistant system.',
     symbol: '🏠',
     examples: ['how to set up a smart thermostat?', 'troubleshoot my smart light connectivity', 'optimize my smart home setup', 'explain smart home security', 'best smart devices for home', 'integrate Alexa with my smart home', 'smart home energy saving tips', 'setup parental controls on my router', 'connect my smart TV to Wi-Fi'],
     call: { starters: ['Home Assistant here. Got smart devices?', 'Home automation expert on call. What\'s the issue?', 'Ready to assist.', 'Hello.'] },
