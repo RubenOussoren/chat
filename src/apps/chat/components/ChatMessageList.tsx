@@ -9,25 +9,26 @@ import { speakText } from '~/modules/elevenlabs/elevenlabs.client';
 import { useChatLLM } from '~/modules/llms/store-llms';
 
 import { GlobalShortcut, useGlobalShortcut } from '~/common/components/useGlobalShortcut';
-import { createDMessage, DMessage, useChatStore } from '~/common/state/store-chats';
+import { InlineError } from '~/common/components/InlineError';
+import { createDMessage, DConversationId, DMessage, useChatStore } from '~/common/state/store-chats';
 import { openLayoutPreferences } from '~/common/layout/store-applayout';
 import { useCapabilityElevenLabs, useCapabilityProdia } from '~/common/components/useCapabilities';
-import { useUIPreferencesStore } from '~/common/state/store-ui';
 
 import { ChatMessage } from './message/ChatMessage';
 import { CleanerMessage, MessagesSelectionHeader } from './message/CleanerMessage';
 import { PersonaSelector } from './persona-selector/PersonaSelector';
+import { useChatShowSystemMessages } from '../store-app-chat';
 
 
 /**
  * A list of ChatMessages
  */
 export function ChatMessageList(props: {
-  conversationId: string | null,
+  conversationId: DConversationId | null,
   isMessageSelectionMode: boolean, setIsMessageSelectionMode: (isMessageSelectionMode: boolean) => void,
-  onExecuteChatHistory: (conversationId: string, history: DMessage[]) => void,
+  onExecuteChatHistory: (conversationId: DConversationId, history: DMessage[]) => void,
   onDiagramFromText: (diagramConfig: DiagramConfig | null) => Promise<any>,
-  onImagineFromText: (conversationId: string, selectedText: string) => Promise<any>,
+  onImagineFromText: (conversationId: DConversationId, selectedText: string) => Promise<any>,
   sx?: SxProps
 }) {
 
@@ -37,7 +38,7 @@ export function ChatMessageList(props: {
   const [selectedMessages, setSelectedMessages] = React.useState<Set<string>>(new Set());
 
   // external state
-  const showSystemMessages = useUIPreferencesStore(state => state.showSystemMessages);
+  const [showSystemMessages] = useChatShowSystemMessages();
   const { messages, editMessage, deleteMessage, historyTokenCount } = useChatStore(state => {
     const conversation = state.conversations.find(conversation => conversation.id === props.conversationId);
     return {
@@ -148,11 +149,13 @@ export function ChatMessageList(props: {
 
   // when there are no messages, show the purpose selector
   if (!filteredMessages.length)
-    return props.conversationId ? (
-      <Box sx={props.sx || {}}>
-        <PersonaSelector conversationId={props.conversationId} runExample={handleAppendMessage} />
+    return (
+      <Box sx={{ ...props.sx }}>
+        {props.conversationId
+          ? <PersonaSelector conversationId={props.conversationId} runExample={handleAppendMessage} />
+          : <InlineError severity='info' error='Select an active conversation for this window' sx={{ m: 2 }} />}
       </Box>
-    ) : null;
+    );
 
   return (
     <List sx={{
