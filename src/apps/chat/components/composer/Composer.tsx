@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { shallow } from 'zustand/shallow';
 
-import { Box, Button, ButtonGroup, Card, Grid, IconButton, Stack, Textarea, Tooltip, Typography } from '@mui/joy';
+import { Box, Button, ButtonGroup, Card, CircularProgress, Grid, IconButton, Stack, Textarea, Tooltip, Typography } from '@mui/joy';
 import { ColorPaletteProp, SxProps, VariantProp } from '@mui/joy/styles/types';
 import AutoModeIcon from '@mui/icons-material/AutoMode';
 import CallIcon from '@mui/icons-material/Call';
@@ -15,27 +15,31 @@ import StopOutlinedIcon from '@mui/icons-material/StopOutlined';
 import TelegramIcon from '@mui/icons-material/Telegram';
 
 import type { ChatModeId } from '../../AppChat';
-import { APP_CALL_ENABLED } from '../../../call/AppCall';
+import { getChatTimeoutMs } from '../../store-app-chat';
 
+import { CmdRunReact } from '~/modules/aifn/react/react';
 import { ContentReducer } from '~/modules/aifn/summarize/ContentReducer';
 import { LLMOptionsOpenAI } from '~/modules/llms/vendors/openai/openai.vendor';
+import { callBrowseFetchPage } from '~/modules/browse/browse.client';
+import { useBrowseCapability } from '~/modules/browse/store-module-browsing';
 import { useChatLLM } from '~/modules/llms/store-llms';
 
 import { DConversationId, useChatStore } from '~/common/state/store-chats';
 import { KeyStroke } from '~/common/components/KeyStroke';
 import { SpeechResult, useSpeechRecognition } from '~/common/components/useSpeechRecognition';
+import { asValidURL } from '~/common/util/urlUtils';
 import { countModelTokens } from '~/common/util/token-counter';
 import { extractFilePathsWithCommonRadix } from '~/common/util/dropTextUtils';
 import { getClipboardItems, supportsClipboardRead } from '~/common/util/clipboardUtils';
 import { htmlTableToMarkdown } from '~/common/util/htmlTableToMarkdown';
 import { launchAppCall } from '~/common/app.routes';
 import { openLayoutPreferences } from '~/common/layout/store-applayout';
-import { pdfToText } from '~/common/util/pdfToText';
 import { playSoundUrl } from '~/common/util/audioUtils';
 import { useDebouncer } from '~/common/components/useDebouncer';
 import { useGlobalShortcut } from '~/common/components/useGlobalShortcut';
 import { useIsMobile } from '~/common/components/useMatchMedia';
 import { useUIPreferencesStore } from '~/common/state/store-ui';
+import { useUXLabsStore } from '~/common/state/store-ux-labs';
 
 import { ButtonCameraCapture } from './ButtonCameraCapture';
 import { ButtonClipboardPaste } from './ButtonClipboardPaste';
@@ -43,6 +47,7 @@ import { ButtonFileAttach } from './ButtonFileAttach';
 import { ChatModeMenu } from './ChatModeMenu';
 import { TokenBadge } from './TokenBadge';
 import { TokenProgressbar } from './TokenProgressbar';
+import { pdfToText } from '../attachments/pdfToText';
 import { useComposerStartupText } from './store-composer';
 
 
@@ -128,6 +133,7 @@ export function Composer(props: {
   const [composeText, debouncedText, setComposeText] = useDebouncer('', 300, 1200, true);
   const [micContinuation, setMicContinuation] = React.useState(false);
   const [speechInterimResult, setSpeechInterimResult] = React.useState<SpeechResult | null>(null);
+  const [isDownloading, setIsDownloading] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
   const [reducerText, setReducerText] = React.useState('');
   const [reducerTextTokens, setReducerTextTokens] = React.useState(0);
@@ -135,9 +141,11 @@ export function Composer(props: {
 
   // external state
   const isMobile = useIsMobile();
+  const labsCalling = useUXLabsStore(state => state.labsCalling);
   const [chatModeId, setChatModeId] = React.useState<ChatModeId>('immediate');
   const [startupText, setStartupText] = useComposerStartupText();
-  const [enterIsNewline, experimentalLabs] = useUIPreferencesStore(state => [state.enterIsNewline, state.experimentalLabs], shallow);
+  const enterIsNewline = useUIPreferencesStore(state => state.enterIsNewline);
+  const { inComposer: browsingInComposer } = useBrowseCapability();
   const { assistantTyping, systemPurposeId, tokenCount: conversationTokenCount, stopTyping } = useChatStore(state => {
     const conversation = state.conversations.find(_c => _c.id === props.conversationId);
     return {
@@ -160,7 +168,7 @@ export function Composer(props: {
   const remainingTokens = tokenLimit - directTokens - historyTokens - responseTokens;
 
 
-  // Effect: load initial text if queued up (e.g. by /launch)
+  // Effect: load initial text if queued up (e.g. by /link/share_targe)
   React.useEffect(() => {
     if (startupText) {
       setStartupText(null);
@@ -249,7 +257,7 @@ export function Composer(props: {
   }, [chatModeId, composeText, micContinuation, props, setComposeText]);
 
   const { isSpeechEnabled, isSpeechError, isRecordingAudio, isRecordingSpeech, toggleRecording } =
-    useSpeechRecognition(onSpeechResultCallback, 2000, 'm');
+    useSpeechRecognition(onSpeechResultCallback, getChatTimeoutMs() || 2000, 'm');
 
   const micIsRunning = !!speechInterimResult;
   const micContinuationTrigger = micContinuation && !micIsRunning && !assistantTyping;
@@ -272,6 +280,23 @@ export function Composer(props: {
 
 
   // Attachments: Files
+
+  const handleAttachWebpage = React.useCallback(async (url: string, fileName: string) => {
+    setIsDownloading(true);
+    let urlContent: string | null;
+    try {
+      urlContent = await callBrowseFetchPage(url);
+    } catch (error: any) {
+      // ignore errors
+      urlContent = `[Web Download] Issue loading website: ${error?.message || typeof error === 'string' ? error : JSON.stringify(error)}`;
+    }
+    setIsDownloading(false);
+    if (urlContent) {
+      setComposeText(expandPromptTemplate(PromptTemplates.PasteFile, { fileName, fileText: urlContent }));
+      return true;
+    }
+    return false;
+  }, [setComposeText]);
 
   const handleAttachFiles = async (files: FileList, overrideFileNames?: string[]): Promise<void> => {
 
@@ -322,6 +347,19 @@ export function Composer(props: {
       return;
     }
 
+    // if the clipboard contains a single url, download and attach it
+    if (event.clipboardData.types.includes('text/plain')) {
+      const textString = event.clipboardData.getData('text/plain');
+      const textIsUrl = asValidURL(textString);
+      if (browsingInComposer) {
+        if (!isDownloading && textIsUrl && !composeText.startsWith(CmdRunReact[0])) {
+          // if we wanted to stop the paste of the URL itself, we can call e.preventDefault() here (before the await)
+          // e.preventDefault();
+          await handleAttachWebpage(textIsUrl, textString);
+        }
+      }
+    }
+
     // paste not intercepted, continue with default behavior
   };
 
@@ -361,6 +399,11 @@ export function Composer(props: {
       try {
         const textItem = await clipboardItem.getType('text/plain');
         const textString = await textItem.text();
+        const textIsUrl = asValidURL(textString);
+        if (browsingInComposer) {
+          if (textIsUrl && await handleAttachWebpage(textIsUrl, textString))
+            continue;
+        }
         setComposeText(expandPromptTemplate(PromptTemplates.PasteMarkdown, { clipboard: textString }));
         continue;
       } catch (error) {
@@ -370,7 +413,7 @@ export function Composer(props: {
       // no text/html or text/plain item found
       console.log('Clipboard item has no text/html or text/plain item.', clipboardItem.types, clipboardItem);
     }
-  }, [setComposeText]);
+  }, [browsingInComposer, handleAttachWebpage, setComposeText]);
 
   useGlobalShortcut(supportsClipboardRead ? 'v' : false, true, true, false, handlePasteFromClipboard);
 
@@ -453,7 +496,7 @@ export function Composer(props: {
         {/* Button column and composer Text (mobile: top, desktop: left and center) */}
         <Grid xs={12} md={9}><Stack direction='row' spacing={{ xs: 1, md: 2 }}>
 
-          {/* Vertical buttons */}
+          {/* Vertical (attach) buttons */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0, md: 2 } }}>
 
             {/* [mobile] Mic button */}
@@ -470,9 +513,10 @@ export function Composer(props: {
 
           </Box>
 
-          {/* Edit box, with Drop overlay */}
+          {/* Edit box + mic buttons + overlays */}
           <Box sx={{ flexGrow: 1, position: 'relative' }}>
 
+            {/* Edit box with inner Token Progress bar */}
             <Box sx={{ position: 'relative' }}>
 
               <Textarea
@@ -504,10 +548,20 @@ export function Composer(props: {
                   lineHeight: 1.75,
                 }} />
 
-              {tokenLimit > 0 && (directTokens > 0 || (historyTokens + responseTokens) > 0) && <TokenProgressbar history={historyTokens} response={responseTokens} direct={directTokens} limit={tokenLimit} />}
+              {tokenLimit > 0 && (directTokens > 0 || (historyTokens + responseTokens) > 0) && (
+                <TokenProgressbar history={historyTokens} response={responseTokens} direct={directTokens} limit={tokenLimit} />
+              )}
+
+              {!!tokenLimit && (
+                <TokenBadge
+                  directTokens={directTokens} indirectTokens={historyTokens + responseTokens} tokenLimit={tokenLimit}
+                  showExcess absoluteBottomRight
+                />
+              )}
 
             </Box>
 
+            {/* Mic & Mic Continuation Buttons */}
             {isSpeechEnabled && (
               <Box sx={{
                 position: 'absolute', top: 0, right: 0,
@@ -526,13 +580,7 @@ export function Composer(props: {
               </Box>
             )}
 
-            {!!tokenLimit && (
-              <TokenBadge
-                directTokens={directTokens} indirectTokens={historyTokens + responseTokens} tokenLimit={tokenLimit}
-                showExcess absoluteBottomRight
-              />
-            )}
-
+            {/* overlay: Mic */}
             {micIsRunning && (
               <Card
                 color='primary' invertedColors variant='soft'
@@ -553,6 +601,7 @@ export function Composer(props: {
               </Card>
             )}
 
+            {/* overlay: Drag & Drop*/}
             <Card
               color='primary' invertedColors variant='soft'
               sx={{
@@ -572,6 +621,26 @@ export function Composer(props: {
               </Typography>
             </Card>
 
+            {isDownloading && <Card
+              color='success' invertedColors variant='soft'
+              sx={{
+                display: 'flex',
+                position: 'absolute', bottom: 0, left: 0, right: 0, top: 0,
+                alignItems: 'center', justifyContent: 'center',
+                border: '1px solid',
+                borderColor: 'success.solidBg',
+                borderRadius: 'xs',
+                zIndex: 20,
+              }}>
+              <CircularProgress />
+              <Typography level='title-md' sx={{ mt: 1 }}>
+                Loading & Attaching Website
+              </Typography>
+              <Typography level='body-xs'>
+                This will take up to 15 seconds
+              </Typography>
+            </Card>}
+
           </Box>
 
         </Stack></Grid>
@@ -585,7 +654,7 @@ export function Composer(props: {
 
               {/* [mobile] bottom-corner secondary button */}
               {isMobile && (isChat
-                  ? <CallButtonMobile disabled={!APP_CALL_ENABLED || !props.conversationId || !chatLLM} onClick={handleCallClicked} sx={{ mr: { xs: 1, md: 2 } }} />
+                  ? <CallButtonMobile disabled={!labsCalling || !props.conversationId || !chatLLM} onClick={handleCallClicked} sx={{ mr: { xs: 1, md: 2 } }} />
                   : (isDraw || isDrawPlus)
                     ? <DrawOptionsButtonMobile onClick={handleDrawOptionsClicked} sx={{ mr: { xs: 1, md: 2 } }} />
                     : <IconButton disabled variant='plain' color='neutral' sx={{ mr: { xs: 1, md: 2 } }} />
@@ -623,7 +692,7 @@ export function Composer(props: {
             {isDesktop && <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 1, justifyContent: 'flex-end' }}>
 
               {/* [desktop] Call secondary button */}
-              {isChat && <CallButtonDesktop disabled={!APP_CALL_ENABLED || !props.conversationId || !chatLLM} onClick={handleCallClicked} />}
+              {isChat && <CallButtonDesktop disabled={!labsCalling || !props.conversationId || !chatLLM} onClick={handleCallClicked} />}
 
               {/* [desktop] Draw Options secondary button */}
               {(isDraw || isDrawPlus) && <DrawOptionsButtonDesktop onClick={handleDrawOptionsClicked} />}
@@ -638,7 +707,6 @@ export function Composer(props: {
         {!!chatModeMenuAnchor && (
           <ChatModeMenu
             anchorEl={chatModeMenuAnchor} onClose={handleModeSelectorHide}
-            experimental={experimentalLabs}
             chatModeId={chatModeId} onSetChatModeId={handleModeChange}
           />
         )}
