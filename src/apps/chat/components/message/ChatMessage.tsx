@@ -525,7 +525,7 @@ export function ChatMessage(props: {
                         ? <RenderLatex key={'latex-' + index} latexBlock={block} />
                         : block.type === 'diff'
                           ? <RenderTextDiff key={'latex-' + index} diffBlock={block} />
-                          : (renderMarkdown && props.noMarkdown !== true && !fromSystem)
+                          : (renderMarkdown && props.noMarkdown !== true && !fromSystem && !(fromUser && block.content.startsWith('/')))
                             ? <RenderMarkdown key={'text-md-' + index} textBlock={block} />
                             : <RenderText key={'text-' + index} textBlock={block} />)}
 
@@ -561,7 +561,7 @@ export function ChatMessage(props: {
       {/* Operations Menu (3 dots) */}
       {!!opsMenuAnchor && (
         <CloseableMenu
-          placement='bottom-end' sx={{ minWidth: 280 }}
+          dense placement='bottom-end' sx={{ minWidth: 280 }}
           open anchorEl={opsMenuAnchor} onClose={closeOperationsMenu}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -623,7 +623,7 @@ export function ChatMessage(props: {
           </MenuItem>}
           {!!props.onConversationRestartFrom && <ListDivider />}
           {!!props.onConversationTruncate && (
-            <MenuItem onClick={handleOpsTruncate}>
+            <MenuItem onClick={handleOpsTruncate} disabled={props.isBottom}>
               <ListItemDecorator><VerticalAlignBottomIcon /></ListItemDecorator>
               Truncate <span style={{ opacity: 0.5 }}>after</span>
             </MenuItem>
@@ -640,12 +640,12 @@ export function ChatMessage(props: {
       {/* Selection (Contextual) Menu */}
       {!!selMenuAnchor && (
         <CloseableMenu
-          placement='bottom-start' sx={{ minWidth: 220 }}
+          dense placement='bottom-start' sx={{ minWidth: 220 }}
           open anchorEl={selMenuAnchor} onClose={closeSelectionMenu}
         >
           <MenuItem onClick={handleOpsCopy} sx={{ flex: 1 }}>
             <ListItemDecorator><ContentCopyIcon /></ListItemDecorator>
-            Copy selection
+            Copy <span style={{ opacity: 0.5 }}>selection</span>
           </MenuItem>
           {!!props.onTextDiagram && <MenuItem onClick={handleOpsDiagram} disabled={!couldDiagram || props.isImagining}>
             <ListItemDecorator><AccountTreeIcon color='success' /></ListItemDecorator>
