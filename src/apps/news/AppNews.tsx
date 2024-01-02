@@ -10,6 +10,7 @@ import { GoodTooltip } from '~/common/components/GoodTooltip';
 import { Link } from '~/common/components/Link';
 import { ROUTE_INDEX } from '~/common/app.routes';
 import { capitalizeFirstLetter } from '~/common/util/textUtils';
+import { themeBgApp } from '~/common/app.theme';
 
 import { newsCallout, NewsItems } from './news.data';
 
@@ -27,7 +28,7 @@ export const cssColorKeyframes = keyframes`
         color: #0B6BCB; /* Primary main color (500) */
     }
     75% {
-        color: #97C3F0; /* Primary lighter shade (300) */
+        color: #083e75; /* Primary lighter shade (300) */
     }`;
 
 
@@ -43,7 +44,7 @@ export function AppNews() {
 
     <Box sx={{
       flexGrow: 1,
-      backgroundColor: 'background.level1',
+      backgroundColor: themeBgApp,
       overflowY: 'auto',
       display: 'flex', justifyContent: 'center',
       p: { xs: 3, md: 6 },
@@ -107,9 +108,13 @@ export function AppNews() {
 
                 {showExpander && (
                   <IconButton
-                    variant='plain' size='sm'
+                    variant='outlined'
                     onClick={() => setLastNewsIdx(idx + 1)}
-                    sx={{ position: 'absolute', right: 0, bottom: 0, mr: -1, mb: -1 }}
+                    sx={{
+                      position: 'absolute', right: 0, bottom: 0, mr: -1, mb: -1,
+                      backgroundColor: 'background.surface',
+                      borderRadius: '50%',
+                    }}
                   >
                     <ExpandMoreIcon />
                   </IconButton>
