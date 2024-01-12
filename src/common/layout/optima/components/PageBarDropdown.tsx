@@ -16,7 +16,7 @@ export type DropdownItems = Record<string, {
 /**
  * A Select component that blends-in nicely (cleaner, easier to the eyes)
  */
-export function GoodDropdown<TValue extends string>(props: {
+export function PageBarDropdown<TValue extends string>(props: {
   items: DropdownItems,
   prependOption?: React.JSX.Element,
   appendOption?: React.JSX.Element,
@@ -80,8 +80,12 @@ export function GoodDropdown<TValue extends string>(props: {
 
         return (
           <Option key={'key-' + idx} value={key} sx={{ whiteSpace: 'nowrap' }}>
-            {props.showSymbols && <ListItemDecorator sx={{ fontSize: 'xl' }}>{item?.symbol + ' '}</ListItemDecorator>}
-            {props.showSymbols && !!item.icon && <ListItemDecorator>{item?.icon}</ListItemDecorator>}
+            {props.showSymbols && (!!item.icon
+                ? <ListItemDecorator>{item?.icon}</ListItemDecorator>
+                : item?.symbol
+                  ? <ListItemDecorator sx={{ fontSize: 'xl' }}>{item?.symbol + ' '}</ListItemDecorator>
+                  : null
+            )}
             {item.title}
             {/*{key === props.value && (*/}
             {/*  <IconButton variant='soft' onClick={() => alert('aa')} sx={{ ml: 'auto' }}>*/}
