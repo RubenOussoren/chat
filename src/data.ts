@@ -4,7 +4,7 @@ export type SystemPurposeId = 'Migrations' | 'Support' | 'Writer' | 'Farmer' | '
 
 export const defaultSystemPurposeId: SystemPurposeId = 'Migrations';
 
-type SystemPurposeData = {
+export type SystemPurposeData = {
   title: string;
   description: string | React.JSX.Element;
   systemMessage: string;
