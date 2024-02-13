@@ -11,8 +11,9 @@ import { Brand } from '~/common/app.config';
 import { fixupHost } from '~/common/util/urlUtils';
 
 import { OpenAIWire, WireOpenAICreateImageOutput, wireOpenAICreateImageOutputSchema, WireOpenAICreateImageRequest } from './openai.wiretypes';
+import { azureModelToModelDescription, lmStudioModelToModelDescription, localAIModelToModelDescription, mistralModelsSort, mistralModelToModelDescription, oobaboogaModelToModelDescription, openAIModelToModelDescription, openRouterModelFamilySortFn, openRouterModelToModelDescription, togetherAIModelsToModelDescriptions } from './models.data';
 import { llmsChatGenerateWithFunctionsOutputSchema, llmsListModelsOutputSchema, ModelDescriptionSchema } from '../llm.server.types';
-import { lmStudioModelToModelDescription, localAIModelToModelDescription, mistralModelsSort, mistralModelToModelDescription, oobaboogaModelToModelDescription, openAIModelToModelDescription, openRouterModelFamilySortFn, openRouterModelToModelDescription, togetherAIModelsToModelDescriptions } from './models.data';
+import { wilreLocalAIModelsApplyOutputSchema, wireLocalAIModelsAvailableOutputSchema, wireLocalAIModelsListOutputSchema } from './localai.wiretypes';
 
 
 const openAIDialects = z.enum([
@@ -122,7 +123,7 @@ export const llmOpenAIRouter = createTRPCRouter({
           .filter(m => m.model.includes('gpt'))
           .map((model): ModelDescriptionSchema => {
             const { id: deploymentRef, model: openAIModelId } = model;
-            const { id: _deleted, label, ...rest } = openAIModelToModelDescription(openAIModelId, model.created_at, model.updated_at);
+            const { id: _deleted, label, ...rest } = azureModelToModelDescription(deploymentRef, openAIModelId, model.created_at, model.updated_at);
             return {
               id: deploymentRef,
               label: `${label} (${deploymentRef})`,
@@ -190,8 +191,18 @@ export const llmOpenAIRouter = createTRPCRouter({
 
             // custom OpenAI sort
             .sort((a, b) => {
-              // due to model name, sorting doesn't require special cases anymore
-              return b.label.localeCompare(a.label);
+
+              // fix the OpenAI model names to be chronologically sorted
+              function remapReleaseDate(id: string): string {
+                return id
+                  .replace('0314', '230314')
+                  .replace('0613', '230613')
+                  .replace('1106', '231106')
+                  .replace('0125', '240125');
+              }
+
+              // due to using by-label, sorting doesn't require special cases anymore
+              return remapReleaseDate(b.label).localeCompare(remapReleaseDate(a.label));
 
               // move models with the link emoji (🔗) to the bottom
               // const aLink = a.label.includes('🔗');
@@ -314,6 +325,41 @@ export const llmOpenAIRouter = createTRPCRouter({
         console.error('api/openai/moderation error:', error);
         throw new TRPCError({ code: 'BAD_REQUEST', message: `Error: ${error?.message || error?.toString() || 'Unknown error'}` });
       }
+    }),
+
+
+  /// Dialect-specific procedures ///
+
+  /* [LocalAI] List all Model Galleries */
+  dialectLocalAI_galleryModelsAvailable: publicProcedure
+    .input(listModelsInputSchema)
+    .query(async ({ input: { access } }) => {
+      const wireLocalAIModelsAvailable = await openaiGET(access, '/models/available');
+      return wireLocalAIModelsAvailableOutputSchema.parse(wireLocalAIModelsAvailable);
+    }),
+
+  /* [LocalAI] Download a model from a Model Gallery */
+  dialectLocalAI_galleryModelsApply: publicProcedure
+    .input(z.object({
+      access: openAIAccessSchema,
+      galleryName: z.string(),
+      modelName: z.string(),
+    }))
+    .mutation(async ({ input: { access, galleryName, modelName } }) => {
+      const galleryModelId = `${galleryName}@${modelName}`;
+      const wireLocalAIModelApply = await openaiPOST(access, null, { id: galleryModelId }, '/models/apply');
+      return wilreLocalAIModelsApplyOutputSchema.parse(wireLocalAIModelApply);
+    }),
+
+  /* [LocalAI] Poll for a Model download Job status */
+  dialectLocalAI_galleryModelsJob: publicProcedure
+    .input(z.object({
+      access: openAIAccessSchema,
+      jobId: z.string(),
+    }))
+    .query(async ({ input: { access, jobId } }) => {
+      const wireLocalAIModelsJobs = await openaiGET(access, `/models/jobs/${jobId}`);
+      return wireLocalAIModelsListOutputSchema.parse(wireLocalAIModelsJobs);
     }),
 
 });
