@@ -285,7 +285,8 @@ export function findSourceOrThrow<TSourceSetup>(sourceId: DModelSourceId) {
 
 
 const modelsKnowledgeMap: { contains: string[], cutoff: string }[] = [
-  { contains: ['4-0125', '4-turbo', '4-1106', '4-vision'], cutoff: '2023-04' },
+  { contains: ['4-0125', '4-turbo'], cutoff: '2023-12' },
+  { contains: ['4-1106', '4-vision'], cutoff: '2023-04' },
   { contains: ['4-0613', '4-0314', '4-32k', '3.5-turbo'], cutoff: '2021-09' },
 ] as const;
 
@@ -341,4 +342,9 @@ export function useChatLLM() {
     const chatLLM = chatLLMId ? state.llms.find(llm => llm.id === chatLLMId) ?? null : null;
     return { chatLLM };
   }, shallow);
+}
+
+export function getLLMsDebugInfo() {
+  const { llms, sources, chatLLMId, fastLLMId, funcLLMId } = useModelsStore.getState();
+  return { sources: sources.length, llmsCount: llms.length, chatId: chatLLMId, fastId: fastLLMId, funcId: funcLLMId };
 }

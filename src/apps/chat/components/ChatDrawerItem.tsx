@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Avatar, Box, IconButton, ListItem, ListItemButton, ListItemDecorator, Sheet, styled, Tooltip, Typography } from '@mui/joy';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import CloseIcon from '@mui/icons-material/Close';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditIcon from '@mui/icons-material/Edit';
@@ -312,15 +312,15 @@ function ChatDrawerItem(props: {
                   </FadeInButton>
                 </Tooltip>
 
-                <Tooltip disableInteractive title='Export Chat'>
-                  <FadeInButton size='sm' onClick={handleConversationExport}>
-                    <FileDownloadOutlinedIcon />
-                  </FadeInButton>
-                </Tooltip>
-
                 <Tooltip disableInteractive title='Branch'>
                   <FadeInButton size='sm' onClick={handleConversationBranch}>
                     <ForkRightIcon />
+                  </FadeInButton>
+                </Tooltip>
+
+                <Tooltip disableInteractive title='Export Chat'>
+                  <FadeInButton size='sm' onClick={handleConversationExport}>
+                    <FileDownloadOutlinedIcon />
                   </FadeInButton>
                 </Tooltip>
               </>}
@@ -331,21 +331,21 @@ function ChatDrawerItem(props: {
             <Box sx={{ flex: 1 }} />
 
             {/* Delete [armed, arming] buttons */}
-            {!searchFrequency && <>
-              {deleteArmed && (
-                <Tooltip disableInteractive title='Confirm Deletion'>
-                  <FadeInButton key='btn-del' variant='solid' color='success' size='sm' onClick={handleConversationDelete} sx={{ opacity: 1, mr: 0.5 }}>
-                    <DeleteForeverIcon sx={{ color: 'danger.solidBg' }} />
-                  </FadeInButton>
-                </Tooltip>
-              )}
-
-              <Tooltip disableInteractive title={deleteArmed ? 'Cancel Delete' : 'Delete'}>
-                <FadeInButton key='btn-arm' size='sm' onClick={deleteArmed ? handleDeleteButtonHide : handleDeleteButtonShow} sx={deleteArmed ? { opacity: 1 } : {}}>
-                  {deleteArmed ? <CloseIcon /> : <DeleteOutlineIcon />}
+            {/*{!searchFrequency && <>*/}
+            {deleteArmed && (
+              <Tooltip disableInteractive title='Confirm Deletion'>
+                <FadeInButton key='btn-del' variant='solid' color='success' size='sm' onClick={handleConversationDelete} sx={{ opacity: 1, mr: 0.5 }}>
+                  <DeleteForeverIcon sx={{ color: 'danger.solidBg' }} />
                 </FadeInButton>
               </Tooltip>
-            </>}
+            )}
+
+            <Tooltip disableInteractive title={deleteArmed ? 'Cancel Delete' : 'Delete'}>
+              <FadeInButton key='btn-arm' size='sm' onClick={deleteArmed ? handleDeleteButtonHide : handleDeleteButtonShow} sx={deleteArmed ? { opacity: 1 } : {}}>
+                {deleteArmed ? <CloseRoundedIcon /> : <DeleteOutlineIcon />}
+              </FadeInButton>
+            </Tooltip>
+            {/*</>}*/}
           </Box>
         )}
 
