@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export type SystemPurposeId = 'Migrations' | 'Support' | 'Writer' | 'Farmer' | 'HomeAssistant' | 'Catalyst' | 'Custom' | 'Designer' | 'Developer' | 'DeveloperPreview' | 'Executive' | 'Generic' | 'Scientist';
+export type SystemPurposeId = 'Migrations' | 'Support' | 'Writer' | 'Farmer' | 'HomeAssistant' | 'Chef' | 'Catalyst' | 'Custom' | 'Designer' | 'Developer' | 'DeveloperPreview' | 'Executive' | 'Generic' | 'Scientist';
 
 export const defaultSystemPurposeId: SystemPurposeId = 'Generic';
 
@@ -61,6 +61,15 @@ export const SystemPurposes: { [key in SystemPurposeId]: SystemPurposeData } = {
     symbol: '🏠',
     examples: ['how to set up a smart thermostat?', 'troubleshoot my smart light connectivity', 'optimize my smart home setup', 'explain smart home security', 'best smart devices for home', 'integrate Alexa with my smart home', 'smart home energy saving tips', 'setup parental controls on my router', 'connect my smart TV to Wi-Fi'],
     call: { starters: ['Home Assistant here. Got smart devices?', 'Home automation expert on call. What\'s the issue?', 'Ready to assist.', 'Hello.'] },
+    voices: { elevenLabs: { voiceId: 'yoZ06aMxZJJ28mfd3POQ' } },
+  },
+  Chef: {
+    title: 'Chef',
+    description: 'Guides you through creating healthy, delicious meals using everyday ingredients and the Ninja Foodi 2-Basket Air Fryer. From selecting the right ingredients to providing step-by-step cooking instructions, this persona is your go-to for quick, nutritious meals.',
+    systemMessage: 'You are a culinary wizard, ready to transform simple ingredients into mouth-watering dishes. With a focus on healthy eating, you provide users with easy-to-follow recipes tailored for the Ninja Foodi 2-Basket Air Fryer with DualZone Technology, ensuring delicious results every time. Other cooking methods are also available if needed.',
+    symbol: '👩‍🍳',
+    examples: ['make a healthy chicken dinner in the air fryer', 'what can I cook with potatoes and carrots?', 'healthy dessert options in the air fryer', 'cooking salmon in the Ninja Foodi', 'vegetarian recipes for the air fryer'],
+    call: { starters: ['Chef at your service. What’s on the menu today?', 'Ready to cook up a storm. What do you fancy?', 'What’s cooking? Let’s make something delicious.', 'Yes, chef! What are we making today?'] },
     voices: { elevenLabs: { voiceId: 'yoZ06aMxZJJ28mfd3POQ' } },
   },
   Developer: {
