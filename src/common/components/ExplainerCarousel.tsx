@@ -10,6 +10,7 @@ import { ChatMessageMemo } from '../../apps/chat/components/message/ChatMessage'
 
 import { AgiSquircleIcon } from '~/common/components/icons/AgiSquircleIcon';
 import { ChatBeamIcon } from '~/common/components/icons/ChatBeamIcon';
+import { GlobalShortcutItem, ShortcutKeyName, useGlobalShortcuts } from '~/common/components/useGlobalShortcut';
 import { createDMessage } from '~/common/state/store-chats';
 import { useIsMobile } from '~/common/components/useMatchMedia';
 
@@ -102,6 +103,7 @@ export function ExplainerCarousel(props: {
   const isMobile = useIsMobile();
 
   // derived state
+  const { onFinished } = props;
   const isLastPage = stepIndex === props.steps.length - 1;
   const activeStep = props.steps[stepIndex] ?? null;
 
@@ -111,6 +113,24 @@ export function ExplainerCarousel(props: {
   const mdMessage = React.useMemo(() => {
     return mdText ? createDMessage('assistant', mdText) : null;
   }, [mdText]);
+
+  const handlePrevPage = React.useCallback(() => {
+    setStepIndex(step => step > 0 ? step - 1 : step);
+  }, []);
+
+  const handleNextPage = React.useCallback(() => {
+    if (isLastPage)
+      onFinished();
+    else
+      setStepIndex(step => step < props.steps.length - 1 ? step + 1 : step);
+  }, [isLastPage, onFinished, props.steps.length]);
+
+
+  const shortcuts = React.useMemo((): GlobalShortcutItem[] => [
+    [ShortcutKeyName.Left, false, false, false, handlePrevPage],
+    [ShortcutKeyName.Right, false, false, false, handleNextPage],
+  ], [handleNextPage, handlePrevPage]);
+  useGlobalShortcuts(shortcuts);
 
 
   // [effect] restart from 0 if steps change
@@ -123,8 +143,8 @@ export function ExplainerCarousel(props: {
     <Box sx={{
       flex: 1,
       mx: 'auto',
-      maxWidth: '900px', // <Container/>
-      minWidth: '80%',   // ensure it's not too snug on desktop
+      width: { sm: '92%', md: '86%' }, /* Default to 80% width */
+      maxWidth: '900px',    /* But don't go over 900px */
 
       // content
       display: 'flex',
@@ -164,27 +184,28 @@ export function ExplainerCarousel(props: {
 
 
       {/* Page Message */}
-      <Box sx={{
-        // display: 'grid',
-      }}>
-        {!!mdMessage && (
-          <ChatMessageMemo
-            message={mdMessage}
-            fitScreen={isMobile}
-            showAvatar={false}
-            adjustContentScaling={isMobile ? -1 : undefined}
-            sx={{
-              minHeight: '17rem', // 256px
-              py: 2,
-              border: 'none',
-              bordreRadius: 0,
-              borderRadius: 'xl',
-              // boxShadow: '0 8px 24px -4px rgb(var(--joy-palette-primary-darkChannel) / 0.12)',
-              boxShadow: '0 60px 32px -60px rgb(var(--joy-palette-primary-darkChannel) / 0.14)',
-            }}
-          />
-        )}
-      </Box>
+      {!!mdMessage && (
+        <ChatMessageMemo
+          message={mdMessage}
+          fitScreen={isMobile}
+          showAvatar={false}
+          adjustContentScaling={isMobile ? -1 : undefined}
+          sx={{
+            minHeight: '17rem', // 256px
+            py: 2,
+            border: 'none',
+            bordreRadius: 0,
+            borderRadius: 'xl',
+            // boxShadow: '0 8px 24px -4px rgb(var(--joy-palette-primary-darkChannel) / 0.12)',
+            boxShadow: '0 60px 32px -60px rgb(var(--joy-palette-primary-darkChannel) / 0.14)',
+
+            // customize the embedded GitHub Markdown for transparent images
+            ['.markdown-body img']: {
+              '--color-canvas-default': 'transparent!important',
+            },
+          }}
+        />
+      )}
 
 
       {/* Buttons */}
@@ -192,26 +213,22 @@ export function ExplainerCarousel(props: {
         {/* Advance Button */}
         <Button
           variant='solid'
+          size='lg'
           endDecorator={isLastPage ? <ChatBeamIcon /> : <ArrowForwardRoundedIcon />}
-          onClick={() => {
-            if (isLastPage)
-              props.onFinished();
-            else
-              setStepIndex(step => step < props.steps.length - 1 ? step + 1 : step);
-          }}
+          onClick={handleNextPage}
           sx={{
             boxShadow: '0 8px 24px -4px rgb(var(--joy-palette-primary-mainChannel) / 20%)',
             minWidth: 180,
           }}
         >
-          {isLastPage ? 'Continue' : 'Next'}
+          {isLastPage ? 'Start' : 'Next'}
         </Button>
 
         {/* Back Button */}
         <Button
           variant='outlined'
           color='neutral'
-          onClick={() => setStepIndex(step => step > 0 ? step - 1 : step)}
+          onClick={handlePrevPage}
           sx={{
             minWidth: 140,
           }}

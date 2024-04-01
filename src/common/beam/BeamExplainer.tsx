@@ -34,11 +34,13 @@ Your journey to brilliance continues. Unlock the power of **Beaming** to explore
     mdContent: `
 **Beam** allows you to run multiple AI models in parallel, exploring the solution space from different points of view.
 
+![big-AGI BEAM Rays](https://raw.githubusercontent.com/enricoros/big-AGI/main/public/images/explainers/explainer-beam-scatter-1200px-alpha.png)
+
 1. Reach closer to your goal, faster
 2. Tap into multiple AI perspectives at once
 3. Discover unconventional solutions
 
-#### How to Beam (Phase 1/2):
+#### How to Beam:
 
 - Clearly define your problem
 - Launch up to 8 AI models in parallel
@@ -60,15 +62,17 @@ Your journey to brilliance continues. Unlock the power of **Beaming** to explore
 1. Combine insights into one solution
 2. Leverage the collective wisdom of AI
 
+![big-AGI BEAM Rays](https://raw.githubusercontent.com/enricoros/big-AGI/main/public/images/explainers/explainer-beam-gather-1600px-alpha.png)
+
 #### How to Merge:
 Utilizes all the remaining Beam responses and allows you to choose how to fuse them.
 
 - Select the fusion *LLM*
 - Choose a Merge *method*, then *start*:
-  - **✨ Pick**: AI selects the most promising response
-  - **✨ Fusion**: AI combines the best elements of each response
-  - **✨ Compare**: AI analyzes and compares the responses
-  - **✨ Custom**: Define your own fusion prompt
+- **✨ Pick**: AI selects the most promising response
+- **✨ Fusion**: AI combines the best elements of each response
+- **✨ Compare**: AI analyzes and compares the responses
+- **✨ Custom**: Define your own fusion prompt
 - Review and accept the results, or try again
 
 **Done**. You can now bring the merged message or any other message back to the chat.
@@ -77,9 +81,9 @@ Utilizes all the remaining Beam responses and allows you to choose how to fuse t
   {
     stepDigits: '',
     stepName: 'Tips',
-    titleSuffix: 'Effectiveness Tips',
+    titleSuffix: 'Effectiveness Tips', //  · N × GPT-4 -> GPT-5
     mdContent: `
-#### Human-in-the-loop · N × GPT-4 -> GPT-5
+#### Human as a Judge
 You, the user, provide creative direction and final judgement. The AI models are powerful tools that generate drafts for you to quickly evaluate and refine.
 There are profound reasons why this approach works, which we explore [in our blog](https://big-agi.com/blog/introducing-beam).
 
@@ -97,38 +101,40 @@ a chat history is short, and the return on investment is greater.
 ] as const;
 
 
+const beamExplainerSx: SxProps = {
+  // allows the content to be scrolled (all browsers)
+  overflowY: 'auto',
+  // actually make sure this scrolls & fills
+  height: '100%',
+
+  // style
+  padding: { xs: '1rem', md: '1.5rem' },
+  animation: `${animationEnterScaleUp} 0.2s cubic-bezier(.17,.84,.44,1)`,
+
+  // layout
+  display: 'grid',
+};
+
+
 export function BeamExplainer(props: {
   onWizardComplete: () => any,
-  sx?: SxProps,
 }) {
 
   return (
     <Box
       // variant={grayUI ? 'solid' : 'soft'}
       // invertedColors={grayUI ? true : undefined}
-      sx={{
-        '--Pad': { xs: '1rem', md: '1.5rem' },
-        '--Pad_2': 'calc(var(--Pad) / 2)',
-
-        // enter animation
-        animation: `${animationEnterScaleUp} 0.2s cubic-bezier(.17,.84,.44,1)`,
-
-        // scrollable layout
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-
-        padding: 'var(--Pad)',
-
-        ...props.sx,
-      }}>
+      sx={beamExplainerSx}
+    >
 
       <ExplainerCarousel
         steps={beamSteps}
         footer={
           <Typography level='body-xs' sx={{ textAlign: 'center', maxWidth: '400px', mx: 'auto' }}>
-            The journey from exploration to refinement is iterative.
-            Each cycle sharpens your ideas, bringing you closer to innovation.
+            Unlock beaming, combine AI wisdom, achieve clarity.
+            {/*Discover, Design and Dream.*/}
+            {/*The journey from exploration to refinement is iterative.*/}
+            {/*Each cycle sharpens your ideas, bringing you closer to innovation.*/}
           </Typography>
         }
         onFinished={props.onWizardComplete}

@@ -5,6 +5,8 @@ import { Badge, Box, Button, IconButton, ListItemDecorator, MenuItem, Option, Se
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
+import { getBackendCapabilities } from '~/modules/backend/store-backend-capabilities';
+
 import { CloseableMenu } from '~/common/components/CloseableMenu';
 import { ConfirmationModal } from '~/common/components/ConfirmationModal';
 import { themeZIndexOverMobileDrawer } from '~/common/app.theme';
@@ -13,10 +15,11 @@ import { useIsMobile } from '~/common/components/useMatchMedia';
 import type { IModelVendor } from '../vendors/IModelVendor';
 import { DModelSourceId, useModelsStore } from '../store-llms';
 import { createModelSourceForVendor, findAllVendors, findVendorById, ModelVendorId } from '../vendors/vendors.registry';
+import { vendorHasBackendCap } from '../vendors/useSourceSetup';
 
 
 /*function locationIcon(vendor?: IModelVendor | null) {
-  if (vendor && vendor.id === 'openai' && ModelVendorOpenAI.hasBackendCap?.())
+  if (vendor && vendor.id === 'openai' && vendorHasBackendCap(...))
     return <CloudDoneOutlinedIcon />;
   return !vendor ? null : vendor.location === 'local' ? <ComputerIcon /> : <CloudOutlinedIcon />;
 }*/
@@ -81,13 +84,14 @@ export function ModelsSourceSelector(props: {
     .map(vendor => {
         const sourceInstanceCount = modelSources.filter(source => source.vId === vendor.id).length;
         const enabled = vendor.instanceLimit > sourceInstanceCount;
+        const backendCaps = getBackendCapabilities();
         return {
           vendor,
           enabled,
           component: (
             <MenuItem key={vendor.id} disabled={!enabled} onClick={() => handleAddSourceFromVendor(vendor.id)}>
               <ListItemDecorator>
-                {vendorIcon(vendor, !!vendor.hasBackendCap && vendor.hasBackendCap())}
+                {vendorIcon(vendor, vendorHasBackendCap(vendor, backendCaps))}
               </ListItemDecorator>
               {vendor.name}
 

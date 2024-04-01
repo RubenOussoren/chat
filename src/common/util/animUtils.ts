@@ -1,39 +1,47 @@
 import { keyframes } from '@emotion/react';
 
 
-export const animationColorBeamScatter = keyframes`
+export const animationColorBeamScatterINV = keyframes`
     100%, 0% {
-        //color: rgb(183, 255, 0);
         color: rgb(219, 255, 77);
     }
     25% {
-        //color: rgb(255, 251, 0);
         color: rgb(255, 255, 128);
     }
     50% {
-        //color: rgba(0, 255, 81);
         color: rgba(128, 255, 153);
     }
     75% {
-        //color: rgb(255, 153, 0);
         color: rgb(255, 204, 77);
     }`;
 
+export const animationColorBeamScatter = keyframes`
+    100%, 0% {
+        color: rgb(85, 140, 47); // A rich, dark green
+    }
+    25% {
+        color: rgb(75, 115, 35); // A slightly desaturated green for contrast
+    }
+    50% {
+        color: rgba(65, 155, 55); // A brighter, more saturated green with slight transparency
+    }
+    75% {
+        color: rgb(95, 130, 40); // A blend between the first and third colors for a smooth transition
+    }`;
 
 export const animationColorBeamGather = keyframes`
     100%, 0% {
-        background-color: rgb(102, 0, 51);
+        color: rgb(102, 0, 51);
     }
     25% {
-        background-color: rgb(76, 0, 76);
+        color: rgb(76, 0, 76);
     }
     50% {
-        background-color: rgb(63, 0, 128);
+        color: rgb(63, 0, 128);
     }
     75% {
-        background-color: rgb(0, 0, 128);
+        color: rgb(0, 0, 128);
     }`;
-
 
 export const animationColorBlues = keyframes`
     0%, 100% {
@@ -48,6 +56,21 @@ export const animationColorBlues = keyframes`
     75% {
         color: #083e75; /* Primary lighter shade (300) */
     }`;
+
+/*export const animationColorLimey = keyframes`
+    100%, 0% {
+        color: rgb(183, 255, 0);
+    }
+    25% {
+        color: rgb(255, 251, 0);
+    }
+    50% {
+        color: rgba(0, 255, 81);
+    }
+    75% {
+        color: rgb(255, 153, 0);
+    }`;
+*/
 
 export const animationColorRainbow = keyframes`
     100%, 0% {
@@ -87,7 +110,22 @@ export const animationColorRainbow = keyframes`
         color: rgb(204, 0, 102);
     }`;
 
-/*export const animationColorDarkerRainbow = keyframes`
+
+export const animationBackgroundBeamGather = keyframes`
+    100%, 0% {
+        background-color: rgb(102, 0, 51);
+    }
+    25% {
+        background-color: rgb(76, 0, 76);
+    }
+    50% {
+        background-color: rgb(63, 0, 128);
+    }
+    75% {
+        background-color: rgb(0, 0, 128);
+    }`;
+
+/*export const animationBackgroundDarkerRainbow = keyframes`
     100%, 0% {
         background-color: rgb(128, 0, 0);
     }
@@ -125,6 +163,7 @@ export const animationColorRainbow = keyframes`
         background-color: rgb(102, 0, 51);
     }`;*/
 
+
 export const animationEnterBelow = keyframes`
     from {
         opacity: 0;
@@ -138,13 +177,13 @@ export const animationEnterBelow = keyframes`
 
 export const animationEnterScaleUp = keyframes`
     0% {
-        opacity: 0;
+        //opacity: 0;
         //transform: translateY(8px);
         scale: 0.98;
         //rotate: -5deg;
     }
     100% {
-        opacity: 1;
+        //opacity: 1;
         //transform: translateY(0);
         scale: 1;
         //rotate: 0;
@@ -187,7 +226,7 @@ export const animationShadowLimey = keyframes`
         box-shadow: 1px 1px 0 white, 2px 2px 12px rgb(255, 153, 0);
     }`;
 
-export const animationTextShadowLimey = keyframes`
+/*export const animationTextShadowLimey = keyframes`
     100%, 0% {
         text-shadow: 2px 2px 0 white, 4px 4px 0 rgb(183, 255, 0);
     }
@@ -200,7 +239,7 @@ export const animationTextShadowLimey = keyframes`
     75% {
         text-shadow: 2px 2px 0 white, 4px 4px 0 rgb(255, 153, 0);
     }`;
-
+*/
 // export const animationShadowBlueDarker = keyframes`
 //     0%, 100% {
 //         box-shadow: 3px 3px 0 rgb(135, 206, 235), /* Sky Blue */ 6px 6px 0 rgb(70, 130, 180), /* Steel Blue */ 9px 9px 0 rgb(0, 128, 128); /* Teal */

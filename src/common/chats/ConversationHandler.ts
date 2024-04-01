@@ -81,13 +81,16 @@ export class ConversationHandler {
 
   messagesReplace(messages: DMessage[]): void {
     this.chatActions.setMessages(this.conversationId, messages);
+
+    // if zeroing the messages, also terminate an active beam
+    if (!messages.length)
+      this.beamStore.getState().terminate();
   }
 
 
   // Beam
 
   getBeamStore = () => this.beamStore;
-
 
   /**
    * Opens a beam over the given history
