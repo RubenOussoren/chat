@@ -8,12 +8,12 @@
  */
 export const Brand = {
   Title: {
-    Base: 'big-AGI',
-    Common: (process.env.NODE_ENV === 'development' ? '[DEV] ' : '') + 'big-AGI',
+    Base: 'ROMS GPT',
+    Common: (process.env.NODE_ENV === 'development' ? '' : '') + 'ROMS GPT',
   },
   Meta: {
     Description: 'Launch big-AGI to unlock the full potential of AI, with precise control over your data and models. Voice interface, AI personas, advanced features, and fun UX.',
-    SiteName: 'big-AGI | Precision AI for You',
+    SiteName: 'ROMS GPT | Precision AI for You',
     ThemeColor: '#32383E',
     TwitterSite: '@enricoros',
   },
