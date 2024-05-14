@@ -4,8 +4,10 @@ import { Box, Button, DialogContent, DialogTitle, Dropdown, FormControl, FormLab
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import DriveFileRenameOutlineRoundedIcon from '@mui/icons-material/DriveFileRenameOutlineRounded';
-import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+
+import { DEV_MODE_SETTINGS } from '../../../apps/settings-modal/UxLabsSettings';
 
 import type { DLLMId } from '~/modules/llms/store-llms';
 
@@ -69,6 +71,7 @@ export function BeamScatterDropdown(props: {
     cardScrolling, toggleCardScrolling,
     scatterShowPrevMessages, toggleScatterShowPrevMessages,
     scatterShowLettering, toggleScatterShowLettering,
+    gatherAutoStartAfterScatter, toggleGatherAutoStartAfterScatter,
     gatherShowAllPrompts, toggleGatherShowAllPrompts,
   } = useModuleBeamStore();
 
@@ -103,9 +106,9 @@ export function BeamScatterDropdown(props: {
       <MenuButton
         aria-label='Beam Options'
         slots={{ root: IconButton }}
-        slotProps={{ root: { size: 'sm', sx: { my: -0.5 } } }}
+        slotProps={{ root: { size: 'sm', sx: { my: -0.25 } } }}
       >
-        <MoreHorizRoundedIcon />
+        <MoreVertIcon />
       </MenuButton>
 
       <Menu placement='right-end' sx={{ minWidth: 200, zIndex: 'var(--joy-zIndex-modal)' /* on top of its own modal in FS */ }}>
@@ -163,9 +166,14 @@ export function BeamScatterDropdown(props: {
           Response Numbers
         </MenuItem>
 
-        <ListItem onClick={() => handleClearLastConfig()}>
+        <ListItem onClick={DEV_MODE_SETTINGS ? () => handleClearLastConfig() : undefined}>
           <Typography level='body-sm'>Advanced</Typography>
         </ListItem>
+
+        <MenuItem onClick={toggleGatherAutoStartAfterScatter}>
+          <ListItemDecorator>{gatherAutoStartAfterScatter && <CheckRoundedIcon />}</ListItemDecorator>
+          Auto-Merge
+        </MenuItem>
 
         <MenuItem onClick={toggleGatherShowAllPrompts}>
           <ListItemDecorator>{gatherShowAllPrompts && <CheckRoundedIcon />}</ListItemDecorator>
